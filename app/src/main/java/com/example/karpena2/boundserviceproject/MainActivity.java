@@ -17,20 +17,20 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar mProgressBar;
     private Button mButton;
     private ProgressService mProgressService;
-    boolean isBound = false;
+    boolean mIsBound = false;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             ProgressService.MyBinder binder = (ProgressService.MyBinder) iBinder;
             mProgressService = binder.getservice();
-            isBound = true;
+            mIsBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mProgressService = null;
-            isBound = false;
+            mIsBound = false;
 
         }
     };
@@ -40,9 +40,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Intent intent = new Intent(this, ProgressService.class);
-        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
         mProgressBar = findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.VISIBLE);
@@ -54,9 +51,6 @@ public class MainActivity extends AppCompatActivity {
                 changeProgress();
             }
         });
-
-
-
     }
 
     private void changeProgress() {
@@ -67,6 +61,22 @@ public class MainActivity extends AppCompatActivity {
             mProgressBar.setProgress(currentProgress - HALF_PROGRESS);
         } else {
             mProgressBar.setProgress(ZERO_PROGRESS);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, ProgressService.class);
+        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mIsBound) {
+            unbindService(mServiceConnection);
+            mIsBound = false;
         }
     }
 
