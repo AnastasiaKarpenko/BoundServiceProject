@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     public static final int HALF_PROGRESS = 50;
@@ -17,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar mProgressBar;
     private Button mButton;
     private ProgressService mProgressService;
+    private int mProgressBarProgress;
     boolean mIsBound = false;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -25,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
             ProgressService.MyBinder binder = (ProgressService.MyBinder) iBinder;
             mProgressService = binder.getservice();
             mIsBound = true;
+            mProgressBarProgress = mProgressService.getProgress();
+
+            mProgressBar.setProgress(mProgressBarProgress);
+
         }
 
         @Override
@@ -43,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
 
         mProgressBar = findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.VISIBLE);
+        if (mProgressBarProgress == 100) {
+            Toast.makeText(this, "100% done", Toast.LENGTH_SHORT).show();
+        }
 
         mButton = findViewById(R.id.button);
         mButton.setOnClickListener(new View.OnClickListener() {
@@ -55,10 +64,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void changeProgress() {
         // This method will change the current progress bar progress value on 50%. But not till less than 0%
-        int currentProgress = mProgressBar.getProgress();
+        mProgressBarProgress = mProgressBar.getProgress();
 
-        if (currentProgress >= HALF_PROGRESS) {
-            mProgressBar.setProgress(currentProgress - HALF_PROGRESS);
+        if (mProgressBarProgress >= HALF_PROGRESS) {
+            mProgressBar.setProgress(mProgressBarProgress - HALF_PROGRESS);
         } else {
             mProgressBar.setProgress(ZERO_PROGRESS);
         }
