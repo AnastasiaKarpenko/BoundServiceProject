@@ -8,7 +8,6 @@ import android.util.Log;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -50,20 +49,34 @@ public class ProgressService extends Service {
 
     public int getProgress() {
 
-        mScheduledExecutorService = Executors.newScheduledThreadPool(1);
-        ScheduledFuture<Integer> future = mScheduledExecutorService.schedule(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                int currentProgress = 0;
+//        mScheduledExecutorService = Executors.newScheduledThreadPool(1);
+//        ScheduledFuture<Integer> future = mScheduledExecutorService.schedule(new Callable<Integer>() {
+//            @Override
+//            public Integer call() throws Exception {
+//                int currentProgress = 0;
+//
+//                currentProgress = currentProgress + 5;
+//
+//                return currentProgress;
+//            }
+//        }, 200, TimeUnit.MILLISECONDS);
+//
+//        try {
+//            mResult = future.get();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return mResult;
 
-                currentProgress = currentProgress + 5;
-
-                return currentProgress;
-            }
-        }, 200, TimeUnit.MILLISECONDS);
+        ProgressTaskCallable<Integer> taskCallable = new ProgressTaskCallable<>();
+        IRunCallable<Integer> iRunCallable = new IRunCallable<>(taskCallable);
+        ScheduledFuture future = mScheduledExecutorService.scheduleAtFixedRate(iRunCallable, 200, 200, TimeUnit.MILLISECONDS);
 
         try {
-            mResult = future.get();
+            mResult = (Integer) future.get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -71,6 +84,47 @@ public class ProgressService extends Service {
         }
 
         return mResult;
+    }
+
+    class IRunCallable<Integer> implements Runnable {
+        private Callable<Integer> mCallable;
+        private java.lang.Integer mReturnedObject;
+        private Exception mException = null;
+
+        IRunCallable(Callable<Integer> callable) {
+            mCallable = callable;
+        }
+
+        @Override
+        public void run() {
+            mReturnedObject = 0;
+            mException = null;
+            try {
+                mReturnedObject = (java.lang.Integer) mCallable.call();
+            } catch (Exception e) {
+                mException = e;
+            }
+        }
+
+        public Exception getException() {
+            return mException;
+        }
+
+        public int get() {
+            return mReturnedObject;
+        }
+    }
+
+    class ProgressTaskCallable<Integer> implements Callable<java.lang.Integer> {
+
+        @Override
+        public java.lang.Integer call() throws Exception {
+            int currentProgress = 0;
+
+            currentProgress = currentProgress + 5;
+
+            return currentProgress;
+        }
     }
 
 
