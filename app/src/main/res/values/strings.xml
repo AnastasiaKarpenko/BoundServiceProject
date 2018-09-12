@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BoundServiceProject</string>
+    <string name="change_progress_btn_text">Change Progress</string>
+</resources>
