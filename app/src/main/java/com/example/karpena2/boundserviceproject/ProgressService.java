@@ -8,6 +8,7 @@ import android.util.Log;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -71,6 +72,8 @@ public class ProgressService extends Service {
 //
 //        return mResult;
 
+        mScheduledExecutorService = Executors.newScheduledThreadPool(1);
+
         ProgressTaskCallable<Integer> taskCallable = new ProgressTaskCallable<>();
         IRunCallable<Integer> iRunCallable = new IRunCallable<>(taskCallable);
         ScheduledFuture future = mScheduledExecutorService.scheduleAtFixedRate(iRunCallable, 200, 200, TimeUnit.MILLISECONDS);
@@ -126,6 +129,5 @@ public class ProgressService extends Service {
             return currentProgress;
         }
     }
-
 
 }
